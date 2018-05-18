@@ -52,7 +52,7 @@ class SierpinskiCarpet:
         return model
 
 if __name__ == "__main__":
-    scarp = SierpinskiCarpet("Sierpinski Carpet", 15, 729, 729)
+    scarp = SierpinskiCarpet("Sierpinski Carpet", 2, 729, 729)
     model = scarp.make_model()
     picture = MakeImage.from_pixel_colors(model)
     picture.show(scarp.name)
