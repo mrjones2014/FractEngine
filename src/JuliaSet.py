@@ -1,16 +1,36 @@
+#!/usr/bin/env python3
+
 from decimal import Decimal
+import argparse
 import MakeImage
+import Matrix
 
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 
-def make_matrix(w, h):
-    return [[0 for x in range(w)] for y in range(h)]
+def parseArgs():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-W", "--width", help="Image width", default=1100)
+    parser.add_argument("-H", "--height", help="Image height", default=700)
+    parser.add_argument("-d", "--dpi", help="Image DPI", default=300)
+    parser.add_argument("-r", "--real", help="The real component of the initial C value.")
+    parser.add_argument("-i", "--imaginary", help="The imaginary component of the initial C value.")
+    parser.add_argument("-f", "--filename", help="Filename to save to; if unspecified, show without saving.")
+    args = parser.parse_args()
+    missingArg = False
+    if args.real is None:
+        missingArg = True
+        print("Fatal: No real component for C specified.")
+    if args.imaginary is None:
+        missingArg = True
+        print("Fatal: No imaginary component for C specified.")
+    if missingArg:
+        quit()
+    else: 
+        args.real = Decimal(args.real)
+        args.imaginary = Decimal(args.imaginary)
+        return args
 
-def put_pixels(image, pixels, height, width):
-    for x in range(width):
-        for y in range(height):
-            image.putpixel((x, y), pixels[x][y])
 
 class JuliaSet:
     def __init__(self, name: str, width, height, r_start, i_start):
@@ -26,7 +46,7 @@ class JuliaSet:
         self.i_start = Decimal(i_start)
     
     def make_model(self):
-        model = make_matrix(self.height, self.width)
+        model = Matrix.new(self.height, self.width)
         for j in range(1, self.height):
             for i in range(1, self.width):
                 r_old = Decimal(-1.6 + i / 320)
@@ -47,7 +67,12 @@ class JuliaSet:
         return model
 
 if __name__ == "__main__":
-    jset = JuliaSet("Julia Set", 1100, 700, -0.123, 0.745)
+    args = parseArgs()
+    jset = JuliaSet("Julia Set", args.width, args.height, args.real, args.imaginary)
     model = jset.make_model()
     picture = MakeImage.from_pixel_colors(model)
-    picture.show(jset.name)
+    if args.filename is not None:
+        picture.save(args.filename, format="PNG", dpi=(args.dpi, args.dpi))
+        print("Saved image as " + args.filename)
+    else:
+        picture.show(title=jset.name)
