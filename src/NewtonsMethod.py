@@ -5,15 +5,15 @@ BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
 YELLOW = (255, 255, 0)
 
-img_x = 562
-img_y = 562
+img_x = 1024
+img_y = 1024
 image = Image.new("RGB", (img_x, img_y))
 
-max_iterations = 15
-epsilon = 0.2
+max_iterations = 25
+epsilon = 0.1
 
-for x in range(img_x):
-    for y in range(img_y):
+for x in range(-256, img_x - 256):
+    for y in range(-256, img_y - 256):
         a = -2 + 0.007 * x
         b = -2 + 0.007 * y
         for i in range(max_iterations):
@@ -27,12 +27,12 @@ for x in range(img_x):
             b = y_n
 
         if abs(a - 1) + abs(b) < epsilon:
-            image.putpixel((x, y), BLUE)
+            image.putpixel((x + 256, y + 256), BLUE)
         elif abs(a + 1) + abs(b) < epsilon:
-            image.putpixel((x, y), RED)
+            image.putpixel((x + 256, y + 256), RED)
         elif abs(a) + abs(b - 1) < epsilon:
-            image.putpixel((x, y), GREEN)
+            image.putpixel((x + 256, y + 256), GREEN)
         elif abs(a) + abs(b + 1) < epsilon:
-            image.putpixel((x, y), YELLOW)
+            image.putpixel((x + 256, y + 256), YELLOW)
         
 image.save("newton.png", "PNG")
