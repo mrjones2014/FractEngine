@@ -1,58 +1,58 @@
-from decimal import Decimal
-import MakeImage
-import math
+import numpy as numpy
+from PIL import Image, ImageOps
 
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
-WHITE = (255, 255, 255)
+n = 6
 
-def make_matrix(w, h):
-    return [[0 for x in range(w)] for y in range(h)]
+#make sure the image is a power of 3 relative to the num size
+imageSize = 3**n
 
-def put_pixels(image, pixels, height, width):
-    for x in range(width):
-        for y in range(height):
-            image.putpixel((x, y), pixels[x][y])
+#Create the image and initialize it as black
+image = numpy.empty([imageSize, imageSize, 3], dtype = numpy.uint8)
+image.fill(0)
 
-class Pixel:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.filled = 0
-    
-    def filled_check(self, n):
-        if n >= 1:
-            if (self.x % 3 == 2 and self.y % 3 == 2):
-                self.filled = 1
-            else:
-                self.x = math.ceil(self.x / 3)
-                self.y = math.ceil(self.y / 3)
-                self.filled_check(n - 1)
-        
-class SierpinskiCarpet: 
-    def __init__(self, name: str, n, width, height):
-        self.name = "Sierpinski Carpet"
-        self.width = width
-        self.height = height
-        self.n = n
+#Any "filled" pixel will be changed to be white
+color = numpy.array([255, 255, 255], dtype = numpy.uint8)
 
-    def make_model(self):
-        model = make_matrix(self.height, self.width)
-        for j in range(1, self.height):
-            for i in range(1, self.width):
-                pixel = Pixel(i, j)
-                pixel.filled_check(self.n)
-                if pixel.filled == 1:
-                    model[i][j] = WHITE
-                else:
-                    model[i][j] = BLACK
-        
-        return model
+for level in range (1, n + 1):
+    stepSize = 3**(n - level)
+    for x in range(0, 3**level):
+        if x % 3 == 1:
+            for y in range (0, 3**level):
+                if y % 3 == 1:
+                    #if we get here, the pixel is "filled", so set the color to white
+                    image[y * stepSize : (y+1) * stepSize, x * stepSize : (x + 1) * stepSize] = color
 
-if __name__ == "__main__":
-    scarp = SierpinskiCarpet("Sierpinski Carpet", 2, 729, 729)
-    model = scarp.make_model()
-    picture = MakeImage.from_pixel_colors(model)
-    picture.show(scarp.name)
+    #Send to image and save the file
+    outputFilename = "SierpinskiCarpet%d.bmp" % level
+    Image.fromarray(image).save("SierpinskiCarpet%d.bmp" % level)
+
+#Grab each image that we saved
+image_list = ['SierpinskiCarpet1.bmp', 'SierpinskiCarpet2.bmp', 'SierpinskiCarpet3.bmp', 'SierpinskiCarpet4.bmp']
+
+#Open each image so we can modify them
+imgs = [Image.open(i) for i in image_list]
+
+#Add a border to each image
+imgs = [ImageOps.expand(i, border=20, fill='white') for i in imgs]
+
+#Figure out the minimum shape so we can fit each image to that size
+#This shouldn't really matter since they should all be the same size
+#but it's a sanity check
+min_shape = sorted( [(numpy.sum(i.size), i.size) for i in imgs])[0][1]
+
+#Stack each image horizontally
+imgs_comb = numpy.hstack((numpy.asarray(i.resize(min_shape)) for i in imgs))
+
+#Load the image we just made so that we can add an overall border to the 
+#whole image
+imgs_comb = Image.fromarray(imgs_comb)
+imgs_comb_with_border = ImageOps.expand(imgs_comb, border=10, fill='white')
+
+#Finally save the whole thing
+imgs_comb_with_border.save("SierpinskiCarpetRow.bmp")
+print("Saved File: SierpinskiCarpetRow.bmp")
+
+
+
+
+
