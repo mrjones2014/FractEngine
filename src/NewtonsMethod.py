@@ -1,38 +1,73 @@
 from PIL import Image
 
-RED = (255, 0, 0)
-BLUE = (0, 0, 255)
-GREEN = (0, 255, 0)
-YELLOW = (255, 255, 0)
+# -1 <= x <= 1
+x_min = -2.0
+x_max = 2.0
 
-img_x = 1024
-img_y = 1024
-image = Image.new("RGB", (img_x, img_y))
+# -1 <= y <= 1
+y_min = -2.0
+y_max = 2.0
 
-max_iterations = 25
-epsilon = 0.1
+# max_iterations
+max_iterations = 40
 
-for x in range(-256, img_x - 256):
-    for y in range(-256, img_y - 256):
-        a = -2 + 0.007 * x
-        b = -2 + 0.007 * y
-        for i in range(max_iterations):
-            numerator = (((a ** 2 - b ** 2) ** 2 - 4 * a ** 2 * b ** 2 - 1) * 4 * (a ** 3 - 3 * a * b ** 2) + (4 * a * b * (a ** 2 - b ** 2) * 4 * (3 * a ** 2 * b - b ** 3)))
-            denominator = (16 * (a ** 3 - 3 * a * b ** 2) ** 2 + 16 * (3 * a ** 2 * b - b ** 3) ** 2)
-            x_n = a - numerator / denominator
-            numerator = (((a ** 2 - b ** 2) ** 2 - 4 * a ** 2 * b ** 2 - 1) * (-4) * (3 * a ** 2 * b - b ** 3)) + 4 * (a ** 3 - 3 * a * b ** 2) * (4 * a * b * (a ** 2 - b ** 2))
-            denominator = (16 * (a ** 3 - 3 * a * b ** 2) ** 2 + 16 * (3 * a ** 2 * b - b ** 3) ** 2)
-            y_n = b - numerator / denominator
-            a = x_n
-            b = y_n
+# Epsilon for error range
+epsilon = 10e-5
 
-        if abs(a - 1) + abs(b) < epsilon:
-            image.putpixel((x + 256, y + 256), BLUE)
-        elif abs(a + 1) + abs(b) < epsilon:
-            image.putpixel((x + 256, y + 256), RED)
-        elif abs(a) + abs(b - 1) < epsilon:
-            image.putpixel((x + 256, y + 256), GREEN)
-        elif abs(a) + abs(b + 1) < epsilon:
-            image.putpixel((x + 256, y + 256), YELLOW)
-        
-image.save("newton.png", "PNG")
+# Red, Blue, Yellow, Green
+colors = [(255, 0, 0), (0, 0, 255), (255, 255, 0), (0, 255, 0)]
+# If you want to test different functions, add them (and their derivatives) here
+# and call them at the bottom like the example
+def fourth(z): 
+	return (z**4 - 1)
+	
+def dfourth(z): 
+	return (4 * z**3)
+
+# Implementation of Newton's Method for derivate estimation
+def newtons_method(f, f_prime, z):
+	for i in range(max_iterations):
+		z_plus = z - f(z) / f_prime(z)
+		
+		# Check for overflow
+		if abs(f(z)) > 10e10:
+			return None
+		
+		# Check for underflow
+		if abs(f(z)) < 10e-14:
+			return None
+			
+		# Checks for convergence
+		if abs(z_plus - z) < epsilon:
+			return z
+		
+		z = z_plus
+		
+	return None
+	
+# Method to graphically represent Newton's Method
+def draw(f, f_prime, img, size, img_name):
+	
+	roots = []
+	for y in range(size):
+		z_y = y * (y_max - y_min)/(size - 1) + y_min
+		for x in range(size):
+			z_x = x * (x_max - x_min)/(size - 1) + x_min
+			root = newtons_method(f, f_prime, complex(z_x, z_y))
+			if root:
+				flag = False
+				for test_root in roots:
+					if abs(test_root - root) < 10e-4:
+						root = test_root
+						flag = True
+						break
+				if not flag:
+					roots.append(root)
+			if root:
+				img.putpixel((x, y), colors[roots.index(root) % 4])
+	img.save(img_name, "PNG")
+	
+size = 1024
+img = Image.new("RGB", (size, size), (0, 0, 0))
+draw(lambda z: fourth(z), lambda z: dfourth(z), img, size, "test.png")
+
