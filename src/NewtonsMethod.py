@@ -1,12 +1,12 @@
 from PIL import Image
 
 # -1 <= x <= 1
-x_min = -2.0
-x_max = 2.0
+x_min = -3.0
+x_max = 3.0
 
 # -1 <= y <= 1
-y_min = -2.0
-y_max = 2.0
+y_min = -3.0
+y_max = 3.0
 
 # max_iterations
 max_iterations = 40
@@ -15,7 +15,7 @@ max_iterations = 40
 epsilon = 10e-5
 
 # Red, Blue, Yellow, Green
-colors = [(255, 0, 0), (0, 0, 255), (255, 255, 0), (0, 255, 0)]
+colors = [(0, 0, 255), (0, 255, 0), (255, 0, 0), (255, 255, 0)]
 # If you want to test different functions, add them (and their derivatives) here
 # and call them at the bottom like the example
 def fourth(z): 
@@ -67,7 +67,7 @@ def draw(f, f_prime, img, size, img_name):
 				img.putpixel((x, y), colors[roots.index(root) % 4])
 	img.save(img_name, "PNG")
 	
-size = 1024
+size = 2500
 img = Image.new("RGB", (size, size), (0, 0, 0))
-draw(lambda z: fourth(z), lambda z: dfourth(z), img, size, "test.png")
+draw(lambda z: fourth(z), lambda z: dfourth(z), img, size, "NewtonsMethod.png")
 
