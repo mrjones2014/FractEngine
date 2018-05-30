@@ -102,7 +102,9 @@ venv.bak/
 
 # mypy
 .mypy_cache/
-
 # Images and shit
 *.bmp
 *.jpg
+*.png
+
+.DS_STORE
