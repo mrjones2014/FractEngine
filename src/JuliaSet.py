@@ -41,10 +41,10 @@ class JuliaSet:
         else:
             sign = "+"
         self.name = "Julia Set, C={}".format("{}{}{}".format(r_start, sign, i_start))
-        self.width = width
-        self.height = height
-        self.r_start = r_start
-        self.i_start = i_start
+        self.width = int(float(width))
+        self.height = int(float(height))
+        self.r_start = float(r_start)
+        self.i_start = float(i_start)
     
     def make_image(self):
         image = Image.new("RGB", (self.width, self.height), "white")
